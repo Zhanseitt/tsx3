@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { TasksProvider } from "@/context/TasksContext"; 
-import NavBar from "@/components/ui/NavBar";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({ 
+  subsets: ["cyrillic", "latin"],
+  display: 'swap',
+  variable: "--font-inter", 
+});
 
 export const metadata: Metadata = {
-  title: "To-Do App with Context",
-  description: "A simple to-do list application using Next.js and React Context API",
+  title: "To-Do App Pro",
+  description: "Manage your tasks efficiently and stylishly!",
+  icons: {
+    icon: "/favicon.ico", 
+  }
 };
 
 export default function RootLayout({
@@ -17,14 +22,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className={inter.variable}> 
-      <body className="font-sans bg-slate-50 text-slate-900 min-h-screen flex flex-col"> 
-        <TasksProvider> 
-          <NavBar /> 
-          <main className="flex-grow container mx-auto px-4 py-8">
-            {children}
-          </main>
-        </TasksProvider>
+    <html lang="ru" className={`${inter.variable} h-full`}> 
+      <body className="font-sans antialiased text-foreground bg-background h-full flex flex-col">
+        <div className="flex-grow">
+          {children}
+        </div>
       </body>
     </html>
   );
