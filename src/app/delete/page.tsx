@@ -1,61 +1,100 @@
 "use client";
 
-import Link from "next/link";
 import { PageTitle } from "@/components/shared/PageTitle";
-import { Button } from "@/components/ui/button";
+import { TaskList } from "@/components/tasks/TaskList";
 import { useTasks } from "@/context/TasksContext";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { TaskCard } from "@/components/tasks/TaskCard";
-import { PlusCircle, LayoutGrid } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/button";
+import { Trash2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
-export default function HomePage() {
-  const { tasks, isLoading } = useTasks();
+export default function DeleteTaskPage() {
+  const { tasks, isLoading, deleteCompletedTasks, deleteAllTasks, error: tasksLoadingError } = useTasks();
+
+  const handleBulkDeleteCompleted = async () => {
+    if (isLoading) return;
+    const completedTasks = tasks.filter(task => task.isCompleted);
+    if (completedTasks.length === 0) {
+      toast.info("Нет выполненных задач для удаления.");
+      return;
+    }
+    if (confirm(`Вы уверены, что хотите удалить ${completedTasks.length} выполненных задач? Это действие необратимо.`)) {
+      await deleteCompletedTasks();
+    }
+  };
+
+  const handleBulkDeleteAll = async () => {
+    if (isLoading) return;
+    if (tasks.length === 0) {
+      toast.info("Список задач уже пуст.");
+      return;
+    }
+    if (confirm(`ВЫ УВЕРЕНЫ, что хотите удалить ВСЕ ${tasks.length} задач? ЭТО ДЕЙСТВИЕ НЕОБРАТИМО!`)) {
+      if (confirm(`ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ: ТОЧНО удалить все задачи?`)) {
+        await deleteAllTasks();
+      }
+    }
+  };
+
+  if (isLoading && tasks.length === 0 && !tasksLoadingError) { 
+    return <LoadingSpinner isLoading={true} text="Загрузка списка задач..." className="h-64" />;
+  }
+  
+  if (tasksLoadingError) {
+      return <div className="text-center py-10 text-destructive">Ошибка загрузки задач: {tasksLoadingError}</div>;
+  }
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <PageTitle className="mb-0 text-left sm:text-center flex-grow">
-          Мои Заметки
-        </PageTitle>
-        <div className="flex gap-2 w-full sm:w-auto">
-            <Button variant="outline" asChild className="flex-1 sm:flex-none">
-                <Link href="/tasks" className="flex items-center gap-2">
-                    <LayoutGrid size={18} />
-                    Все задачи (список)
-                </Link>
+      <PageTitle 
+        subTitle="Здесь вы можете управлять удалением ваших задач. Будьте внимательны."
+      >
+        Управление задачами
+      </PageTitle>
+      
+      <div className="bg-card p-6 rounded-xl shadow-medium space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold text-foreground mb-3">Массовое удаление</h2>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              variant="destructive"
+              size="lg"
+              className="flex-1 gap-2"
+              onClick={handleBulkDeleteCompleted}
+              disabled={isLoading || tasks.filter(t => t.isCompleted).length === 0}
+            >
+              <Trash2 size={18} />
+              Удалить все выполненные
             </Button>
-            <Button asChild size="lg" className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground">
-                <Link href="/add" className="flex items-center gap-2">
-                    <PlusCircle size={20} />
-                    Создать заметку
-                </Link>
+            <Button
+              variant="destructive" 
+              size="lg"
+              className="flex-1 gap-2 bg-red-700 hover:bg-red-800 disabled:bg-red-400 text-white"
+              onClick={handleBulkDeleteAll}
+              disabled={isLoading || tasks.length === 0}
+            >
+              <AlertTriangle size={18} />
+              Удалить ВСЕ задачи
             </Button>
+          </div>
+        </div>
+
+        <div>
+            <h2 className="text-xl font-semibold text-foreground mb-3 mt-8 border-t border-border pt-6">Поштучное удаление</h2>
+            {tasks.length === 0 && !isLoading ? (
+                <p className="text-muted-foreground text-center py-4">
+                Нет задач для удаления.
+                </p>
+            ) : (
+                <TaskList
+                tasks={tasks}
+                emptyListMessage="Все задачи удалены или их не было."
+                emptyListActionText="Перейти на главную"
+                emptyListActionLink="/"
+                />
+            )}
         </div>
       </div>
-
-      {isLoading && tasks.length === 0 ? (
-        <LoadingSpinner isLoading={true} text="Загрузка ваших заметок..." className="h-64" />
-      ) : null}
-
-      {!isLoading && tasks.length === 0 ? (
-        <EmptyState
-            icon={<PlusCircle size={48} strokeWidth={1.5} className="text-primary"/>}
-            title="Пока нет ни одной заметки"
-            message="Самое время создать первую, чтобы ничего не забыть!"
-            actionText="Создать первую заметку"
-            actionLink="/add"
-            className="mt-10"
-        />
-      ) : null}
-
-      {!isLoading && tasks.length > 0 && (
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

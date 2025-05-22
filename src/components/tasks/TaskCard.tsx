@@ -45,16 +45,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
   const cardBgClass = cardColorInfo.bg;
   const cardBorderClass = cardColorInfo.border;
   const cardTextClass = cardColorInfo.text; 
-  const cardMutedTextClass = cardColorInfo.name === "Default" || cardColorInfo.name === "Slate" || cardColorInfo.name === "Yellow" || cardColorInfo.name === "Lime"
-    ? "text-slate-500"
-    : `${cardTextClass} opacity-70`; 
+  const cardMutedTextClassValue = (cardColorInfo.name === "Default" || cardColorInfo.name === "Slate" || cardColorInfo.name === "Yellow" || cardColorInfo.name === "Lime")
+     ? "text-slate-500"
+     : `${cardColorInfo.text} opacity-70`;
 
-  const cardDividerClass = cardColorInfo.name === "Default" || cardColorInfo.name === "Slate" || cardColorInfo.bg === 'bg-white'
+  const cardDividerClass = cardColorInfo.name === "Default" || cardColorInfo.name === "Slate" 
     ? cardBorderClass 
     : `${cardBorderClass} opacity-40`; 
 
   let checkIconColorClass = "text-green-600";
-  if (!(cardColorInfo.name === "Default" || cardColorInfo.name === "Slate" || cardColorInfo.name === "Yellow" || cardColorInfo.name === "Lime" || cardColorInfo.bg === "bg-white")) {
+  if (!(cardColorInfo.name === "Default" || cardColorInfo.name === "Slate" || cardColorInfo.name === "Yellow" || cardColorInfo.name === "Lime")) {
     checkIconColorClass = cardTextClass.includes("800") || cardTextClass.includes("900") ? "text-white brightness-125" : `${cardTextClass} brightness-125`;
   }
 
@@ -92,7 +92,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
                 "p-1 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-ring flex-shrink-0",
                 task.isCompleted 
                   ? `${checkIconColorClass} hover:brightness-125`
-                  : `${cardMutedTextClass} hover:opacity-100`, 
+                  : `${cardMutedTextClassValue} hover:opacity-100`, 
               )}
               title={task.isCompleted ? "Отметить как невыполненную" : "Отметить как выполненную"}
               aria-pressed={task.isCompleted}
@@ -104,7 +104,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
           {task.description && (
             <p className={cn(
                 "text-xs sm:text-sm mt-1 break-words line-clamp-3",
-                cardMutedTextClass, 
+                cardMutedTextClassValue, 
                 task.isCompleted ? "line-through" : ""
             )}>
               {task.description}
@@ -131,7 +131,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
                   isOverdue ? "" : `border ${cardBorderClass} border-opacity-50` 
                 )} title={`Срок: ${formattedDueDate}`}>
                 <CalendarDays size={12} className="mr-1 flex-shrink-0" />
-                <span className={isOverdue ? "" : cardMutedTextClass}>{formattedDueDate}</span>
+                <span className={isOverdue ? "" : cardMutedTextClassValue}>{formattedDueDate}</span>
               </div>
             )}
           </div>
@@ -142,7 +142,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
               title={task.isImportant ? "Убрать из важных" : "Отметить как важное"}
               className={cn(
                 "p-1.5 rounded-md transition-colors hover:bg-black/10", 
-                task.isImportant ? `text-orange-500` : cardMutedTextClass,
+                task.isImportant ? `text-orange-500` : cardMutedTextClassValue,
               )}
             >
               {task.isImportant ? <PinOff size={16} /> : <Pin size={16} />}
@@ -150,7 +150,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
             <button 
               onClick={handleDelete} 
               title="Удалить" 
-              className={cn("p-1.5 rounded-md transition-colors hover:bg-red-500/20", cardMutedTextClass, "hover:text-red-600")}
+              className={cn("p-1.5 rounded-md transition-colors hover:bg-red-500/20", cardMutedTextClassValue, "hover:text-red-600")}
             >
                 <Trash2 size={16} />
             </button>
