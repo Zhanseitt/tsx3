@@ -5,6 +5,7 @@ import { Header } from "@/components/shared/Header";
 import { NavBar } from "@/components/shared/NavBar"; 
 import { TasksProvider } from "@/context/TasksContext"; 
 import { Container } from "@/components/shared/Container"; 
+import { Toaster } from 'sonner';
 
 const inter = Inter({ 
   subsets: ["cyrillic", "latin"],
@@ -20,25 +21,20 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
   return (
     <html lang="ru" className={`${inter.variable} h-full`}>
       <body className="font-sans antialiased text-foreground bg-background h-full flex flex-col">
-        <TasksProvider> 
+        <TasksProvider>
           <Header />
-          <NavBar /> 
-          <main className="flex-grow w-full py-6 sm:py-8"> 
-            <Container> 
-              {children}
-            </Container>
+          <NavBar />
+          <main className="flex-grow w-full py-6 sm:py-8">
+            <Container>{children}</Container>
           </main>
           <footer className="bg-card border-t border-border text-center p-4 text-xs sm:text-sm text-muted-foreground">
               © {new Date().getFullYear()} To-Do App Pro.
           </footer>
+          <Toaster richColors position="top-right" />
         </TasksProvider>
       </body>
     </html>

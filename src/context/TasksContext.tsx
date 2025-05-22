@@ -1,13 +1,21 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
-import { Task } from "@/@types/task";
+import { Task } from "@/@types/task"; 
+
+export interface TaskInputData {
+  title: string;
+  description?: string;
+  dueDate?: string;
+  isImportant?: boolean;
+  color?: string;
+}
 
 type TasksContextType = {
   tasks: Task[];
-  isLoading: boolean; 
-  addTask: (title: string) => Promise<void>;
-  editTask: (id: number, newTitle: string) => Promise<void>;
+  isLoading: boolean;
+  addTask: (taskData: TaskInputData) => Promise<void>;
+  editTask: (id: number, taskData: TaskInputData) => Promise<void>; 
   deleteTask: (id: number) => Promise<void>;
   toggleTaskCompletion: (id: number) => Promise<void>;
   getTaskById: (id: number) => Task | undefined;
@@ -27,7 +35,7 @@ interface TasksProviderProps {
   children: ReactNode;
 }
 
-const LOCAL_STORAGE_KEY = "todo-app-tasks-v1";
+const LOCAL_STORAGE_KEY = "todo-app-tasks-v3"; 
 
 export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -38,20 +46,28 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     try {
       const storedTasks = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedTasks) {
-        setTasks(JSON.parse(storedTasks));
+        const parsedTasks: Task[] = JSON.parse(storedTasks);
+        const tasksWithDefaults = parsedTasks.map(task => ({
+            ...task,
+            isCompleted: task.isCompleted || false,
+            createdAt: task.createdAt || new Date().toISOString(),
+            isImportant: task.isImportant || false,
+            color: task.color || "bg-white",
+        }));
+        setTasks(tasksWithDefaults);
       } else {
         setTasks([]);
       }
     } catch (error) {
       console.error("Failed to load tasks from localStorage:", error);
-      setTasks([]); 
+      setTasks([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (!isLoading && tasks.length >= 0) {
+    if (!isLoading) {
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tasks));
       } catch (error) {
@@ -62,39 +78,61 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
 
   const simulateApiCall = <T,>(action: () => T): Promise<T> => {
     return new Promise((resolve) => {
-      setIsLoading(true);
       setTimeout(() => {
         const result = action();
-        setIsLoading(false);
         resolve(result);
-      }, 300); 
+      }, 300);
     });
   };
 
-  const addTask = useCallback(async (title: string) => {
+  const addTask = useCallback(async (taskData: TaskInputData) => {
+    setIsLoading(true);
     await simulateApiCall(() => {
-      const newTask: Task = { id: Date.now(), title, isCompleted: false };
+      const newTask: Task = {
+        id: Date.now(),
+        title: taskData.title,
+        description: taskData.description || "",
+        isCompleted: false,
+        dueDate: taskData.dueDate || undefined,
+        isImportant: taskData.isImportant || false,
+        createdAt: new Date().toISOString(),
+        color: taskData.color || "bg-yellow-100",
+      };
       setTasks((prevTasks) => [...prevTasks, newTask]);
     });
+    setIsLoading(false);
   }, []);
 
-  const editTask = useCallback(async (id: number, newTitle: string) => {
+  const editTask = useCallback(async (id: number, taskData: TaskInputData) => {
+    setIsLoading(true);
     await simulateApiCall(() => {
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
-          task.id === id ? { ...task, title: newTitle } : task
+          task.id === id
+            ? { 
+                ...task,
+                title: taskData.title,
+                description: taskData.description || task.description, 
+                dueDate: taskData.dueDate || task.dueDate,
+                isImportant: taskData.isImportant !== undefined ? taskData.isImportant : task.isImportant,
+              }
+            : task
         )
       );
     });
+    setIsLoading(false);
   }, []);
 
   const deleteTask = useCallback(async (id: number) => {
+    setIsLoading(true);
     await simulateApiCall(() => {
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
     });
+    setIsLoading(false);
   }, []);
 
   const toggleTaskCompletion = useCallback(async (id: number) => {
+    setIsLoading(true);
     await simulateApiCall(() => {
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
@@ -102,12 +140,15 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
         )
       );
     });
+    setIsLoading(false);
   }, []);
 
-  const getTaskById = useCallback((id: number) => {
-    return tasks.find(task => task.id === id);
-  }, [tasks]);
-
+  const getTaskById = useCallback(
+    (id: number) => {
+      return tasks.find((task) => task.id === id);
+    },
+    [tasks] 
+  );
 
   const value = {
     tasks,

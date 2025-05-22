@@ -1,16 +1,18 @@
 "use client";
 
 import { PageTitle } from "@/components/shared/PageTitle";
-import { TaskForm } from "@/components/tasks/TaskForm"; 
-import { useTasks } from "@/context/TasksContext";
-import { useRouter } from "next/navigation"; 
+import { TaskForm } from "@/components/tasks/TaskForm";
+import { useTasks, TaskInputData } from "@/context/TasksContext";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function AddTaskPage() {
   const { addTask, isLoading } = useTasks();
   const router = useRouter();
 
-  const handleAddTask = async (title: string) => {
-    await addTask(title);
+  const handleAddTask = async (data: TaskInputData) => { 
+    await addTask(data);
+    toast.success("Задача успешно добавлена!"); 
     router.push("/tasks"); 
   };
 
@@ -21,7 +23,6 @@ export default function AddTaskPage() {
         <TaskForm 
           onSubmit={handleAddTask} 
           buttonText={isLoading ? "Добавление..." : "Добавить задачу"}
-          isLoadingExternally={isLoading}
         />
       </div>
     </div>
