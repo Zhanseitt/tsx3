@@ -37,4 +37,17 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+Next.js (v13+ App Router)
+TypeScript
+React Context API
+Tailwind CSS
+Lucide React
+Sonner (для уведомлений)
+React Spinners (для индикаторов загрузки)
+localStorage
+ChatGPT (для генерации текстового контента и консультаций по структуре и расположению элементов)
+
+
 >>>>>>> 0a89d93 (Initial commit from Create Next App)
